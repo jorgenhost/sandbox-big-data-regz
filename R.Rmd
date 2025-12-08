@@ -1,0 +1,38 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+
+```{r}
+install.packages("DBI")
+install.packages("duckdb")
+install.packages('packages/dbreg_0.0.2.99.tar.gz', repos = NULL, type='source')
+```
+
+```{r}
+library(duckdb)
+library(dbreg)
+library(modelsummary)
+```
+
+
+
+```{r}
+res = dbreg(tip_amount ~ fare_amount + passenger_count | week_x_weekday + month + VendorID,
+   path = "read_parquet('nyc-taxi/**/*.pq')", ## path to hive-partitioned dataset
+   vcov = "hc1")
+saveRDS(res, "model.rds")
+```
+```{r}
+print(res, fes =TRUE)
+```
+
+```{r}
+res = readRDS("model.rds")
+
+# We are interested in the full coeftable
+res$coeftable
+```
+
