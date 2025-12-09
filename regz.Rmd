@@ -4,10 +4,11 @@ output: html_notebook
 ---
 
 
-
 ```{r}
-#install.packages("DBI")
-#install.packages("duckdb")
+install.packages("DBI")
+install.packages("duckdb")
+install.packages("modelsummary")
+install.packages("Formula")
 install.packages('packages/dbreg_0.0.2.99.tar.gz', repos = NULL, type='source')
 ```
 
@@ -20,7 +21,7 @@ library(modelsummary)
 
 
 ```{r}
-res = dbreg(tip_amount ~ fare_amount + passenger_count | week_x_weekday + relevel(factor(month), ref = "7") + VendorID,
+res = dbreg(tip_amount ~ fare_amount + passenger_count | week_x_weekday + month + VendorID,
    path = "read_parquet('nyc-taxi/**/*.pq')", ## path to hive-partitioned dataset
    vcov = "hc1")
 saveRDS(res, "model.rds")
