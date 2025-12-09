@@ -13,9 +13,44 @@ install.packages('packages/dbreg_0.0.2.99.tar.gz', repos = NULL, type='source')
 ```
 
 ```{r}
+con = duckdb::dbConnect(duckdb::duckdb(), dbdir = "nyc-taxi/databaz.db")
+DBI::dbExecute(con, "SET threads to 2;") # set no of threads as you see fit
+```
+
+
+```{r}
+# Load packages after setting env vars
+library(DBI)
 library(duckdb)
+
 library(dbreg)
 library(modelsummary)
+```
+
+
+
+```{r}
+
+dbExecute(con, "DROP TABLE IF EXISTS taxi;")
+# create a 'taxi' table in our new nyc.db database from our parquet dataset
+dbExecute(
+    con,
+    "
+    CREATE OR REPLACE VIEW taxi AS
+      SELECT *
+      FROM read_parquet('nyc-taxi/**/*.pq')
+    "
+)
+```
+
+```{r}
+# now run our regression against this conn+table combo
+dbreg(
+   tip_amount ~ fare_amount + passenger_count | week_x_weekday + month + VendorID,
+   conn = con,     # database connection,
+   table = "taxi", # table name
+   vcov = "hc1"
+)
 ```
 
 
